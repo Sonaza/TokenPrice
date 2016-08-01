@@ -1,3 +1,6 @@
+## 1.2.1
+* Fixed incorrect dependency listing for LibRealmInfo in TOC file.
+
 ## 1.2.0
 * Updated for Legion.
 * Added option to use literal gold display.
