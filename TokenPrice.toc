@@ -1,7 +1,7 @@
-## Interface: 60200
+## Interface: 70000
 ## Title: TokenPrice
 ## Notes: WoW token price announcer and helper
-## Version: 1.1.1
+## Version: 1.2.0
 ## Author: Sonaza
 ## OptionalDeps: Ace3, LibDataBroker-1.1
 ## SavedVariables: TokenPriceDB
@@ -15,7 +15,7 @@ libs\AceDB-3.0\AceDB-3.0.xml
 libs\AceEvent-3.0\AceEvent-3.0.xml
 libs\AceHook-3.0\AceHook-3.0.xml
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+libs\LibRealmData.lua
 #@end-no-lib-strip@
 
 core.lua
-getregion.lua
