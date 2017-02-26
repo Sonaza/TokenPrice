@@ -17,12 +17,13 @@ local MODULE_ICON_PATH = "Interface\\Icons\\wow_token01";
 local TEX_MODULE_ICON = ICON_PATTERN_16:format(MODULE_ICON_PATH);
 
 local tokenPrice = {
-	["EUR"] = { name = "Euro", 				price = 20, 	currency = "EUR" },
-	["GBP"] = { name = "British Pound", 	price = 15, 	currency = "GBP" },
-	["USD"] = { name = "US Dollar", 		price = 20, 	currency = "USD" },
-	["CNY"]	= { name = "Chinese Yuan", 		price = 30, 	currency = "CNY" },
-	["TWD"]	= { name = "New Taiwan Dollar", price = 500, 	currency = "TWD" },
-	["KRW"]	= { name = "South Korean Won", 	price = 22000, 	currency = "KRW" },
+	["EUR"] = { name = "Euro", 				price = 20, 	battlenet = 12.99, 	currency = "EUR" },
+	["GBP"] = { name = "British Pound", 	price = 15, 	battlenet = 9.99, 	currency = "GBP" },
+	["USD"] = { name = "US Dollar", 		price = 20, 	battlenet = 15.00, 	currency = "USD" },
+	["AUD"] = { name = "Australian Dollar", price = 25, 	battlenet = 17.00, 	currency = "AUD" },
+	["CNY"]	= { name = "Chinese Yuan", 		price = 75, 	battlenet = nil, 	currency = "CNY" },
+	["TWD"]	= { name = "New Taiwan Dollar", price = 500, 	battlenet = nil, 	currency = "TWD" },
+	["KRW"]	= { name = "South Korean Won", 	price = 22000, 	battlenet = nil, 	currency = "KRW" },
 };
 
 local regionCurrency = {
@@ -31,10 +32,22 @@ local regionCurrency = {
 	["KR"] = "KRW",
 	["TW"] = "TWD",
 	["CN"] = "CNY",
+	["OC"] = "AUD",
 };
 
 function Addon:OnEnable()
-	local playerRegion = LibRealmInfo:GetCurrentRegion() or "US";
+	local playerRegion = "US";
+	
+	local guid = UnitGUID("player")
+	if guid then
+		local serverId = tonumber(strmatch(guid, "^Player%-(%d+)"))
+		local id, realmName, _, _, _, _, realmRegion, realmTimezone = LibRealmInfo:GetRealmInfo(serverId);
+		if(realmRegion == "US" and realmTimezone == "AEST") then
+			playerRegion = "OC";
+		else
+			playerRegion = realmRegion or LibRealmInfo:GetCurrentRegion();
+		end
+	end
 	
 	local defaults = {
 		global = {
@@ -119,7 +132,18 @@ function Addon:GetRealMoneyPrice(money)
 	local gold = money / 10000;
 	
 	local pricedata = tokenPrice[self.db.global.currency];
-	return pricedata.price / (gold / 1000), pricedata.currency;
+	return pricedata.price, pricedata.price / (gold / 10000), pricedata.currency;
+end
+
+function Addon:GetBattleNetRedeemPrice(money)
+	if(not money or money == 0) then return 0 end
+	
+	local gold = money / 10000;
+	
+	local pricedata = tokenPrice[self.db.global.currency];
+	if(not pricedata.battlenet) then return nil end
+	
+	return pricedata.battlenet, pricedata.battlenet / (gold / 10000), pricedata.currency;
 end
 
 local function sign(value)
@@ -181,11 +205,21 @@ function Addon:SetTooltipText(tooltip)
 	
 	tooltip:AddLine(" ");
 	
-	local realPrice, realCurrency = Addon:GetRealMoneyPrice(lastPrice.price);
-	tooltip:AddDoubleLine("Real Price", string.format("|cffffffff%.3f|r %s / |cffffffff%s|r", realPrice, realCurrency, GetMoneyString(10000000, true)));
-	
+	local tokenPriceRealMoney, realPrice, realCurrency = Addon:GetRealMoneyPrice(lastPrice.price);
+	tooltip:AddDoubleLine(
+		string.format("Real Price (|cffffffff%.2f|r %s)", tokenPriceRealMoney, realCurrency),
+		string.format("|cffffffff%.3f|r %s / |cffffffff%s|r", realPrice, realCurrency, GetMoneyString(100000000, true)));
+		
 	local timeToSell = Addon:GetTimeLeftString();
 	tooltip:AddDoubleLine("Average Sell Time", string.format("|cffffffff%s|r", timeToSell));
+	
+	local redeemPrice, relativeRedeemPrice, realCurrency = Addon:GetBattleNetRedeemPrice(lastPrice.price);
+	if(redeemPrice) then
+		tooltip:AddLine(" ");
+		tooltip:AddDoubleLine(
+			string.format("Battle.net Balance (|cffffffff%.2f|r %s)", redeemPrice, realCurrency),
+			string.format("|cffffffff%.3f|r %s / |cffffffff%s|r", relativeRedeemPrice, realCurrency, GetMoneyString(100000000, true)));
+	end
 	
 	local highPrice, lowPrice = Addon:GetPeaks();
 	if(highPrice or lowPrice) then

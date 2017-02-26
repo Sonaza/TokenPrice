@@ -1,3 +1,10 @@
+## 1.2.2
+* TOC bump for patch 7.1.5.
+* Fixed incorrect Chinese token price.
+* Added Australian dollar real money option.
+* Added price display for Battle.net token redeeming (non-Asian currencies only).
+* Since gold prices for tokens are going up by so much the denominator for real money displays is now 10000 gold.
+
 ## 1.2.1
 * Fixed incorrect dependency listing for LibRealmInfo in TOC file.
 

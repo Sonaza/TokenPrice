@@ -1,7 +1,7 @@
-## Interface: 70000
+## Interface: 70100
 ## Title: TokenPrice
 ## Notes: WoW token price announcer and helper
-## Version: 1.2.1
+## Version: 1.2.2
 ## Author: Sonaza
 ## OptionalDeps: Ace3, LibDataBroker-1.1, LibRealmInfo
 ## SavedVariables: TokenPriceDB
