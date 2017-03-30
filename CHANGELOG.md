@@ -1,3 +1,6 @@
+## 1.2.3
+* TOC bump for patch 7.2.0.
+
 ## 1.2.2
 * TOC bump for patch 7.1.5.
 * Fixed incorrect Chinese token price.
