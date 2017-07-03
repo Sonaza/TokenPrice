@@ -17,8 +17,8 @@ local MODULE_ICON_PATH = "Interface\\Icons\\wow_token01";
 local TEX_MODULE_ICON = ICON_PATTERN_16:format(MODULE_ICON_PATH);
 
 local tokenPrice = {
-	["EUR"] = { name = "Euro", 				price = 20, 	battlenet = 12.99, 	currency = "EUR" },
-	["GBP"] = { name = "British Pound", 	price = 15, 	battlenet = 9.99, 	currency = "GBP" },
+	["EUR"] = { name = "Euro", 				price = 20, 	battlenet = 13.00, 	currency = "EUR" },
+	["GBP"] = { name = "British Pound", 	price = 17, 	battlenet = 10.00, 	currency = "GBP" },
 	["USD"] = { name = "US Dollar", 		price = 20, 	battlenet = 15.00, 	currency = "USD" },
 	["AUD"] = { name = "Australian Dollar", price = 25, 	battlenet = 17.00, 	currency = "AUD" },
 	["CNY"]	= { name = "Chinese Yuan", 		price = 75, 	battlenet = nil, 	currency = "CNY" },
@@ -34,6 +34,33 @@ local regionCurrency = {
 	["CN"] = "CNY",
 	["OC"] = "AUD",
 };
+
+local servicePrices = {
+	["EUR"] = {
+		levelBoost 			= 60,
+		factionChange 		= 30,
+		characterTransfer 	= 25,
+		raceChange 			= 25,
+		appearanceChange 	= 15,
+		nameChange 			= 10,
+	},
+	["GBP"] = {
+		levelBoost 			= 49,
+		factionChange 		= 27,
+		characterTransfer 	= 19,
+		raceChange 			= 19,
+		appearanceChange 	= 13,
+		nameChange 			= 9,
+	},
+	["USD"] = {
+		levelBoost 			= 60,
+		factionChange 		= 30,
+		characterTransfer 	= 25,
+		raceChange 			= 25,
+		appearanceChange 	= 15,
+		nameChange 			= 10,
+	},
+}
 
 function Addon:OnEnable()
 	local playerRegion = "US";
@@ -56,6 +83,7 @@ function Addon:OnEnable()
 			currency = regionCurrency[playerRegion] or "USD",
 			showPercentChange = true,
 			useLiteral = false,
+			showCommonServices = true,
 		}
 	};
 	
@@ -107,6 +135,12 @@ function Addon:OpenContextMenu(parentFrame)
 			isNotRadio = true,
 		},
 		{
+			text = "Show service prices in gold",
+			func = function() self.db.global.showCommonServices = not self.db.global.showCommonServices; Addon:UpdateBrokerText(); end,
+			checked = function() return self.db.global.showCommonServices; end,
+			isNotRadio = true,
+		},
+		{
 			text = " ", isTitle = true, notCheckable = true,
 		},
 		{
@@ -144,6 +178,25 @@ function Addon:GetBattleNetRedeemPrice(money)
 	if(not pricedata.battlenet) then return nil end
 	
 	return pricedata.battlenet, pricedata.battlenet / (gold / 10000), pricedata.currency;
+end
+
+function Addon:GetServicePrices(money)
+	if(not money or money == 0) then return nil end
+	
+	local servicePriceData = servicePrices[self.db.global.currency];
+	if(not servicePriceData) then return nil end
+	
+	local tokenPriceData = tokenPrice[self.db.global.currency];
+	if(not tokenPriceData) then return nil end
+	
+	return {
+		levelBoost 			= money * (servicePriceData.levelBoost / tokenPriceData.battlenet),
+		factionChange 		= money * (servicePriceData.factionChange / tokenPriceData.battlenet),
+		raceChange 			= money * (servicePriceData.raceChange / tokenPriceData.battlenet),
+		appearanceChange 	= money * (servicePriceData.appearanceChange / tokenPriceData.battlenet),
+		nameChange 			= money * (servicePriceData.nameChange / tokenPriceData.battlenet),
+		characterTransfer 	= money * (servicePriceData.characterTransfer / tokenPriceData.battlenet)
+	}, servicePriceData, self.db.global.currency;
 end
 
 local function sign(value)
@@ -219,6 +272,38 @@ function Addon:SetTooltipText(tooltip)
 		tooltip:AddDoubleLine(
 			string.format("Battle.net Balance (|cffffffff%.2f|r %s)", redeemPrice, realCurrency),
 			string.format("|cffffffff%.3f|r %s / |cffffffff%s|r", relativeRedeemPrice, realCurrency, GetMoneyString(100000000, true)));
+		
+		if(self.db.global.showCommonServices) then
+			local servicePricesInGold, servicePrices, realCurrency = Addon:GetServicePrices(lastPrice.price);
+			if(servicePricesInGold) then
+				tooltip:AddLine(" ");
+				tooltip:AddLine("Common Service Prices in Gold");
+				tooltip:AddDoubleLine(
+					string.format("|cffffffffLevel Boost|r (|cffffffff%.2f|r %s)", servicePrices.levelBoost, realCurrency),
+					string.format("|cffffffff%s|r", GetMoneyString(servicePricesInGold.levelBoost, true))
+				);
+				tooltip:AddDoubleLine(
+					string.format("|cffffffffFaction Change|r (|cffffffff%.2f|r %s)", servicePrices.factionChange, realCurrency),
+					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.factionChange, true))
+				);
+				tooltip:AddDoubleLine(
+					string.format("|cffffffffCharacter Transfer|r (|cffffffff%.2f|r %s)", servicePrices.characterTransfer, realCurrency),
+					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.characterTransfer, true))
+				);
+				tooltip:AddDoubleLine(
+					string.format("|cffffffffRace Change|r (|cffffffff%.2f|r %s)", servicePrices.raceChange, realCurrency),
+					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.raceChange, true))
+				);
+				tooltip:AddDoubleLine(
+					string.format("|cffffffffAppearance Change|r (|cffffffff%.2f|r %s)", servicePrices.appearanceChange, realCurrency),
+					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.appearanceChange, true))
+				);
+				tooltip:AddDoubleLine(
+					string.format("|cffffffffName Change|r (|cffffffff%.2f|r %s)", servicePrices.nameChange, realCurrency),
+					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.nameChange, true))
+				);
+			end
+		end
 	end
 	
 	local highPrice, lowPrice = Addon:GetPeaks();
