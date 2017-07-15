@@ -17,13 +17,13 @@ local MODULE_ICON_PATH = "Interface\\Icons\\wow_token01";
 local TEX_MODULE_ICON = ICON_PATTERN_16:format(MODULE_ICON_PATH);
 
 local tokenPrice = {
-	["EUR"] = { name = "Euro", 				price = 20, 	battlenet = 13.00, 	currency = "EUR" },
-	["GBP"] = { name = "British Pound", 	price = 17, 	battlenet = 10.00, 	currency = "GBP" },
-	["USD"] = { name = "US Dollar", 		price = 20, 	battlenet = 15.00, 	currency = "USD" },
-	["AUD"] = { name = "Australian Dollar", price = 25, 	battlenet = 17.00, 	currency = "AUD" },
-	["CNY"]	= { name = "Chinese Yuan", 		price = 75, 	battlenet = nil, 	currency = "CNY" },
-	["TWD"]	= { name = "New Taiwan Dollar", price = 500, 	battlenet = nil, 	currency = "TWD" },
-	["KRW"]	= { name = "South Korean Won", 	price = 22000, 	battlenet = nil, 	currency = "KRW" },
+	["EUR"] = { order = 1, name = "Euro", 				price = 20, 	battlenet = 13.00, 	currency = "EUR" },
+	["GBP"] = { order = 2, name = "British Pound", 		price = 17, 	battlenet = 10.00, 	currency = "GBP" },
+	["USD"] = { order = 3, name = "US Dollar", 			price = 20, 	battlenet = 15.00, 	currency = "USD" },
+	["AUD"] = { order = 4, name = "Australian Dollar", 	price = 25, 	battlenet = 17.00, 	currency = "AUD" },
+	["CNY"]	= { order = 5, name = "Chinese Yuan", 		price = 75, 	battlenet = nil, 	currency = "CNY" },
+	["TWD"]	= { order = 6, name = "New Taiwan Dollar", 	price = 500, 	battlenet = nil, 	currency = "TWD" },
+	["KRW"]	= { order = 7, name = "South Korean Won", 	price = 22000, 	battlenet = nil, 	currency = "KRW" },
 };
 
 local regionCurrency = {
@@ -59,6 +59,14 @@ local servicePrices = {
 		raceChange 			= 25,
 		appearanceChange 	= 15,
 		nameChange 			= 10,
+	},
+	["AUD"] = {
+		levelBoost 			= 66,
+		factionChange 		= 33,
+		characterTransfer 	= 27.5,
+		raceChange 			= 27.50,
+		appearanceChange 	= 16.5,
+		nameChange 			= 11,
 	},
 }
 
@@ -148,11 +156,27 @@ function Addon:OpenContextMenu(parentFrame)
 		},
 	};
 	
+	
+	local currencyList = {}
 	for _, data in pairs(tokenPrice) do
+		tinsert(currencyList, {
+			data = data,
+		});
+	end
+	
+	table.sort(currencyList, function(a, b)
+		if(a == nil and b == nil) then return false end
+		if(a == nil) then return true end
+		if(b == nil) then return false end
+		
+		return a.data.order < b.data.order;
+	end);
+	
+	for _, v in pairs(currencyList) do
 		tinsert(contextMenuData, {
-			text = data.name,
-			func = function() self.db.global.currency = data.currency; CloseMenus(); end,
-			checked = function() return self.db.global.currency == data.currency; end,
+			text = v.data.name,
+			func = function() self.db.global.currency = v.data.currency; CloseMenus(); end,
+			checked = function() return self.db.global.currency == v.data.currency; end,
 		});
 	end
 	
@@ -190,12 +214,12 @@ function Addon:GetServicePrices(money)
 	if(not tokenPriceData) then return nil end
 	
 	return {
-		levelBoost 			= money * (servicePriceData.levelBoost / tokenPriceData.battlenet),
-		factionChange 		= money * (servicePriceData.factionChange / tokenPriceData.battlenet),
-		raceChange 			= money * (servicePriceData.raceChange / tokenPriceData.battlenet),
-		appearanceChange 	= money * (servicePriceData.appearanceChange / tokenPriceData.battlenet),
-		nameChange 			= money * (servicePriceData.nameChange / tokenPriceData.battlenet),
-		characterTransfer 	= money * (servicePriceData.characterTransfer / tokenPriceData.battlenet)
+		levelBoost 			= math.ceil(money * (servicePriceData.levelBoost / tokenPriceData.battlenet) / 10000) * 10000,
+		factionChange 		= math.ceil(money * (servicePriceData.factionChange / tokenPriceData.battlenet) / 10000) * 10000,
+		raceChange 			= math.ceil(money * (servicePriceData.raceChange / tokenPriceData.battlenet) / 10000) * 10000,
+		appearanceChange 	= math.ceil(money * (servicePriceData.appearanceChange / tokenPriceData.battlenet) / 10000) * 10000,
+		nameChange 			= math.ceil(money * (servicePriceData.nameChange / tokenPriceData.battlenet) / 10000) * 10000,
+		characterTransfer 	= math.ceil(money * (servicePriceData.characterTransfer / tokenPriceData.battlenet) / 10000) * 10000
 	}, servicePriceData, self.db.global.currency;
 end
 

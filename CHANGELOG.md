@@ -1,5 +1,5 @@
 ## 1.2.4
-* Added listing of gold prices for common services using current token price.
+* Added listing of gold prices for common services using current token price (for EUR, GBP, USD and AUD).
 
 ## 1.2.3
 * TOC bump for patch 7.2.0.
