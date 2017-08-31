@@ -1,3 +1,9 @@
+## 1.3.0
+* TOC bump for patch 7.3.0.
+* Updated Ace3 libs.
+* Added German localization (provided by Smallinger @ Github)
+* Added additional option to change green/red colors based on if you're a buyer or seller (provided by Smallinger @ Github)
+
 ## 1.2.4
 * Added listing of gold prices for common services using current token price (for EUR, GBP, USD and AUD).
 

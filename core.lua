@@ -5,7 +5,10 @@
 ------------------------------------------------------------
 
 local ADDON_NAME, namespace = ...;
-local L = namespace.L
+local L = LibStub('AceLocale-3.0'):GetLocale(ADDON_NAME, true);
+if(not L) then
+	error("Please restart game after updating the addon.");
+end
 
 local Addon = LibStub("AceAddon-3.0"):NewAddon(select(2, ...), ADDON_NAME, "AceEvent-3.0", "AceHook-3.0");
 _G[ADDON_NAME] = Addon;
@@ -92,7 +95,7 @@ function Addon:OnEnable()
 			lastUpdate = 0,
 			currency = regionCurrency[playerRegion] or "USD",
 			showPercentChange = true,
-			showBuyer = false,
+			swapColors = false,
 			useLiteral = false,
 			showCommonServices = true,
 		}
@@ -128,21 +131,20 @@ function Addon:OpenContextMenu(parentFrame)
 	if(not Addon.ContextMenu) then
 		Addon.ContextMenu = CreateFrame("Frame", "TokenPriceContextMenuFrame", UIParent, "UIDropDownMenuTemplate");
 	end
-	local L = namespace.L
 	local contextMenuData = {
 		{
 			text = L["TokenPrice Options"], isTitle = true, notCheckable = true,
 		},
 		{
-			text = L["Show percentage difference in broker"],
+			text = L["Show percentage difference in Broker"],
 			func = function() self.db.global.showPercentChange = not self.db.global.showPercentChange; Addon:UpdateBrokerText(); end,
 			checked = function() return self.db.global.showPercentChange; end,
 			isNotRadio = true,
 		},
 		{
-			text = L["Show percentage difference color as buyer"],
-			func = function() self.db.global.showBuyer = not self.db.global.showBuyer; Addon:UpdateBrokerText(); end,
-			checked = function() return self.db.global.showBuyer; end,
+			text = L["Swap colors (seller/buyer)"],
+			func = function() self.db.global.swapColors = not self.db.global.swapColors; Addon:UpdateBrokerText(); end,
+			checked = function() return self.db.global.swapColors; end,
 			isNotRadio = true,
 		},
 		{
@@ -242,8 +244,10 @@ function Addon:GetPercentDifference(price, otherPrice)
 end
 
 function Addon:GetChangeColor(value)
-	if(not value) then return ""; end
-	if (self.db.global.showBuyer) then
+	if(not value) then
+		return "";
+	end
+	if (self.db.global.swapColors) then
 		if(value >= 0) then
 			return "|cfffa3d27+";
 		else
@@ -274,8 +278,7 @@ function Addon:FormatGoldString(coins, literal)
 end
 
 function Addon:SetTooltipText(tooltip)
-	local L = namespace.L
-	tooltip:AddLine(TEX_MODULE_ICON .. L[" TokenPrice"]);
+	tooltip:AddLine(TEX_MODULE_ICON .. " " .. L["TokenPrice"]);
 	tooltip:AddLine(" ");
 	
 	local lastPrice = Addon:GetLastPrice();
@@ -301,7 +304,7 @@ function Addon:SetTooltipText(tooltip)
 	
 	local tokenPriceRealMoney, realPrice, realCurrency = Addon:GetRealMoneyPrice(lastPrice.price);
 	tooltip:AddDoubleLine(
-		string.format(L["Real Price (|cffffffff%.2f|r %s)"], tokenPriceRealMoney, realCurrency),
+		string.format("%s (|cffffffff%.2f|r %s)", L["Real Price"], tokenPriceRealMoney, realCurrency),
 		string.format("|cffffffff%.3f|r %s / |cffffffff%s|r", realPrice, realCurrency, GetMoneyString(100000000, true)));
 		
 	local timeToSell = Addon:GetTimeLeftString();
@@ -311,7 +314,7 @@ function Addon:SetTooltipText(tooltip)
 	if(redeemPrice) then
 		tooltip:AddLine(" ");
 		tooltip:AddDoubleLine(
-			string.format(L["Battle.net Balance (|cffffffff%.2f|r %s)"], redeemPrice, realCurrency),
+			string.format("%s (|cffffffff%.2f|r %s)", L["Battle.net Balance"], redeemPrice, realCurrency),
 			string.format("|cffffffff%.3f|r %s / |cffffffff%s|r", relativeRedeemPrice, realCurrency, GetMoneyString(100000000, true)));
 		
 		if(self.db.global.showCommonServices) then
@@ -320,27 +323,27 @@ function Addon:SetTooltipText(tooltip)
 				tooltip:AddLine(" ");
 				tooltip:AddLine(L["Common Service Prices in Gold"]);
 				tooltip:AddDoubleLine(
-					string.format(L["|cffffffffLevel Boost|r (|cffffffff%.2f|r %s)"], servicePrices.levelBoost, realCurrency),
+					string.format("|cffffffff%s|r (|cffffffff%.2f|r %s)", L["Level Boost"], servicePrices.levelBoost, realCurrency),
 					string.format("|cffffffff%s|r", GetMoneyString(servicePricesInGold.levelBoost, true))
 				);
 				tooltip:AddDoubleLine(
-					string.format(L["|cffffffffFaction Change|r (|cffffffff%.2f|r %s)"], servicePrices.factionChange, realCurrency),
+					string.format("|cffffffff%s|r (|cffffffff%.2f|r %s)", L["Faction Change"], servicePrices.factionChange, realCurrency),
 					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.factionChange, true))
 				);
 				tooltip:AddDoubleLine(
-					string.format(L["|cffffffffCharacter Transfer|r (|cffffffff%.2f|r %s)"], servicePrices.characterTransfer, realCurrency),
+					string.format("|cffffffff%s|r (|cffffffff%.2f|r %s)", L["Character Transfer"], servicePrices.characterTransfer, realCurrency),
 					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.characterTransfer, true))
 				);
 				tooltip:AddDoubleLine(
-					string.format(L["|cffffffffRace Change|r (|cffffffff%.2f|r %s)"], servicePrices.raceChange, realCurrency),
+					string.format("|cffffffff%s|r (|cffffffff%.2f|r %s)", L["Race Change"], servicePrices.raceChange, realCurrency),
 					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.raceChange, true))
 				);
 				tooltip:AddDoubleLine(
-					string.format(L["|cffffffffAppearance Change|r (|cffffffff%.2f|r %s)"], servicePrices.appearanceChange, realCurrency),
+					string.format("|cffffffff%s|r (|cffffffff%.2f|r %s)", L["Appearance Change"], servicePrices.appearanceChange, realCurrency),
 					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.appearanceChange, true))
 				);
 				tooltip:AddDoubleLine(
-					string.format(L["|cffffffffName Change|r (|cffffffff%.2f|r %s)"], servicePrices.nameChange, realCurrency),
+					string.format("|cffffffff%s|r (|cffffffff%.2f|r %s)", L["Name Change"], servicePrices.nameChange, realCurrency),
 					string.format("|cffffffff%s|r ", GetMoneyString(servicePricesInGold.nameChange, true))
 				);
 			end
@@ -366,7 +369,7 @@ function Addon:SetTooltipText(tooltip)
 		);
 		
 		tooltip:AddLine(" ");
-		tooltip:AddLine(L["|cffaaaaaaNote these values are only updated while logged in.|r"]);
+		tooltip:AddLine(string.format("|cffaaaaaa%s|r", L["Note these values are only updated while logged in."]));
 	end
 end
 
@@ -382,7 +385,6 @@ function Addon:GetAnchors(frame)
 end
 
 function Addon:CreateBroker()
-	local L = namespace.L
 	Addon.module = LibDataBroker:NewDataObject(ADDON_NAME, {
 		type = "data source",
 		label = L["TokenPrice"],
@@ -441,7 +443,6 @@ function Addon:GetLastPrice()
 end
 
 function Addon:InitializeUpdater()
-	local L = namespace.L
 	local active, pollTime = C_WowTokenPublic.GetCommerceSystemStatus();
 	if(active and pollTime > 0) then
 		Addon.ticker = Addon:NewTicker(pollTime, Addon.UpdateMarketPrice);
