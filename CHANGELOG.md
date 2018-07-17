@@ -1,3 +1,6 @@
+## 1.3.1
+* Updated for Battle for Azeroth.
+
 ## 1.3.0
 * TOC bump for patch 7.3.0.
 * Updated Ace3 libs.
