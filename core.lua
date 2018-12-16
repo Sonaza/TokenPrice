@@ -26,6 +26,7 @@ local tokenPrice = {
 	["GBP"] = { order = 2, name = "British Pound", 		price = 17, 	battlenet = 10.00, 	currency = "GBP" },
 	["USD"] = { order = 3, name = "US Dollar", 			price = 20, 	battlenet = 15.00, 	currency = "USD" },
 	["AUD"] = { order = 4, name = "Australian Dollar", 	price = 25, 	battlenet = 17.00, 	currency = "AUD" },
+	["RUB"] = { order = 8, name = "Russian Ruble",      price = 1400,   battlenet = 550,    currency = "RUB" },
 	["CNY"]	= { order = 5, name = "Chinese Yuan", 		price = 75, 	battlenet = nil, 	currency = "CNY" },
 	["TWD"]	= { order = 6, name = "New Taiwan Dollar", 	price = 500, 	battlenet = nil, 	currency = "TWD" },
 	["KRW"]	= { order = 7, name = "South Korean Won", 	price = 22000, 	battlenet = nil, 	currency = "KRW" },
@@ -34,10 +35,11 @@ local tokenPrice = {
 local regionCurrency = {
 	["EU"] = "EUR",
 	["US"] = "USD",
+	["OC"] = "AUD",
+	["RU"] = "RUB",
 	["KR"] = "KRW",
 	["TW"] = "TWD",
 	["CN"] = "CNY",
-	["OC"] = "AUD",
 };
 
 local servicePrices = {
@@ -72,6 +74,14 @@ local servicePrices = {
 		raceChange 			= 27.50,
 		appearanceChange 	= 16.5,
 		nameChange 			= 11,
+	},
+	["RUB"] = {
+		levelBoost          = 3200,
+		factionChange       = 1600,
+		characterTransfer   = 1350,
+		raceChange          = 1350,
+		appearanceChange    = 800,
+		nameChange          = 549,
 	},
 }
 

@@ -1,3 +1,6 @@
+## 1.3.2
+* Added support for Russian ruble. Data provided by Stopperok, thanks.
+
 ## 1.3.1
 * Updated for Battle for Azeroth.
 
