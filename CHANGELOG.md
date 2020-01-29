@@ -1,3 +1,7 @@
+## 1.4.0
+* Patch 8.3.0
+* Added Russian localization as provided by bigfood78. Thanks!
+
 ## 1.3.2
 * Added support for Russian ruble. Data provided by Stopperok, thanks.
 
