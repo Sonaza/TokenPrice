@@ -113,12 +113,29 @@ function Addon:OnEnable()
 	
 	self.db = AceDB:New("TokenPriceDB", defaults, true);
 	
+	Addon:PerformDatabaseMaintenance()
+	
 	Addon:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED");
 	
 	Addon:CreateBroker();
 	Addon:InitializeUpdater();
 	
 	Addon.UpdaterFrame = CreateFrame("Frame"):SetScript("OnUpdate", Addon.OnUpdate);
+end
+
+function Addon:PerformDatabaseMaintenance()
+	local threshold = 72 * 3600; -- 72 hour threshold
+	local currentTime = time();
+	
+	for key, entry in pairs(self.db.global.marketPriceData) do
+		if ((currentTime - entry.time) >= threshold) then
+			-- Delete old data
+			self.db.global.marketPriceData[key] = nil
+		else
+			-- Remove unused field
+			self.db.global.marketPriceData[key].timeDiff = nil
+		end
+	end
 end
 
 function Addon:OnUpdate(elapsed)
@@ -488,11 +505,10 @@ function Addon:TOKEN_MARKET_PRICE_UPDATED()
 	local currentPrice = C_WowTokenPublic.GetCurrentMarketPrice();
 	
 	if(currentPrice) then
-		local priceDiff, timeDiff;
+		local priceDiff;
 		local previousPrice = Addon:GetLastPrice();
 		if(previousPrice) then
 			priceDiff = currentPrice - previousPrice.price;
-			timeDiff = currentTime - previousPrice.time;
 		end
 		
 		if(priceDiff ~= 0) then
@@ -501,7 +517,6 @@ function Addon:TOKEN_MARKET_PRICE_UPDATED()
 				priceDiff 	= priceDiff,
 				
 				time 		= currentTime,
-				timeDiff	= timeDiff,
 			});
 		end
 		

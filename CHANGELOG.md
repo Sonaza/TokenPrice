@@ -1,3 +1,7 @@
+## 2.0.0
+* Shadowlands update
+* Fixed uncontrolled database growth
+
 ## 1.4.0
 * Patch 8.3.0
 * Added Russian localization as provided by bigfood78. Thanks!
